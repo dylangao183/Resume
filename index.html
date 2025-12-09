@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SVG 图形生成器</title>
+  <style>
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f7f9fc;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    input[type="text"] {
+      width: 70%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #result {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px dashed #ccc;
+      border-radius: 6px;
+      min-height: 60px;
+      line-height: 1.6;
+    }
+    .tip {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-top: 10px;
+    }
+    a[download] {
+      color: #e74c3c !important;
+      font-weight: bold;
+      text-decoration: none !important;
+      padding: 10px 15px;
+      border: 2px solid #e74c3c;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+    a[download]:hover {
+      background-color: #e74c3c;
+      color: white !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎨 SVG 图形生成器</h1>
+    <p>输入你想画的图形描述，AI 将为你生成并提供下载。</p>
+
+    <div>
+      <input type="text" id="prompt" placeholder="例如：一个蓝色的五角星" />
+      <button onclick="generate()">生成 SVG</button>
+    </div>
+
+    <p class="tip">💡 提示：支持中文描述，如“笑脸”、“太阳”、“心形”等</p>
+
+    <div id="result">等待生成...</div>
+  </div>
+
+  <script>
+    // 修改为你的 n8n webhook 地址（本地或公网）
+    const WEBHOOK_URL = 'http://localhost:5678/webhook/e09c86c7-0df4-4beb-920c-c9c3e5bece36';
+
+    async function generate() {
+      const input = document.getElementById("prompt");
+      const resultDiv = document.getElementById("result");
+      const message = input.value.trim();
+
+      if (!message) {
+        resultDiv.innerHTML = "请输入一个描述！";
+        return;
+      }
+
+      resultDiv.innerHTML = "🧠 正在生成图形，请稍候...";
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          body: JSON.stringify({ message }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('网络错误');
+
+        const data = await response.json();
+        const text = data.text || data.response || "未收到有效响应。";
+
+        // 直接渲染 HTML（包含可下载链接）
+        resultDiv.innerHTML = text;
+
+      } catch (err) {
+        resultDiv.innerHTML = `<span style="color:red">❌ 错误：${err.message}</span>`;
+        console.error(err);
+      }
+    }
+
+    // 初始提示
+    document.getElementById("result").innerHTML = "请输入上方描述并点击【生成 SVG】";
+  </script>
+
+</body>
+</html>
